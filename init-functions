@@ -1,0 +1,55 @@
+#!/bin/bash
+
+function validate_os_creds() {
+    if [[ -z ${OS_USERNAME}  ||  -z ${OS_PASSWORD}  ||  -z ${OS_TENANT_NAME}  ||  -z ${OS_AUTH_URL} ]]
+    then 
+    	if [ -f "$WORKINGDIRECTORY/openstackrc" ]
+    	then
+    		source $WORKINGDIRECTORY/openstackrc
+    	fi
+    	
+    	echo ""
+    	echo "Required OpenStack credentials are not defined in the environment."
+    	echo ""
+    	if [ -z ${OS_TENANT_NAME} ]
+    	then
+        	echo -n "OpenStack Tenant: "
+        	read OS_TENANT_NAME;
+        	if ! [ ${OS_TENANT_NAME} == 'admin' ]
+        	then
+        		echo ""
+ 				echo "This tool only works with the admin tenant."
+ 				rm $WORKINGDIRECTORY/openstackrc
+ 				echo ""
+ 				exit 1
+        	fi
+        	export OS_TENANT_NAME="${OS_TENANT_NAME}"
+        	echo "export OS_TENANT_NAME=\"${OS_TENANT_NAME}\"" >> $WORKINGDIRECTORY/openstackrc
+    	fi
+    
+    	if [ -z ${OS_USERNAME} ]
+    	then
+        	echo -n "OpenStack Username: "
+        	read OS_USERNAME;
+        	export OS_USERNAME="${OS_USERNAME}"
+        	echo "export OS_USERNAME=\"${OS_USERNAME}\"" >> $WORKINGDIRECTORY/openstackrc
+    	fi
+      
+    	if [ -z ${OS_PASSWORD} ]
+    	then
+        	echo -n "OpenStack Password: "
+        	read -sr OS_PASSWORD;
+        	export OS_PASSWORD="${OS_PASSWORD}"
+        	echo ""
+    	fi
+        
+    	if [ -z ${OS_AUTH_URL} ]
+    	then
+        	echo -n "OpenStack Auth URL : "
+        	read OS_AUTH_URL;
+        	export OS_AUTH_URL="${OS_AUTH_URL}"
+        	echo "export OS_AUTH_URL=\"${OS_AUTH_URL}\"" >> $WORKINGDIRECTORY/openstackrc
+    	fi
+    fi
+}
+

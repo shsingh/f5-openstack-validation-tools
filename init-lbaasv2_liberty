@@ -1,0 +1,13 @@
+#!/bin/bash
+
+WORKINGDIRECTORY=/lbaasv2_liberty
+
+. init-functions
+
+validate_os_creds
+
+cd /lbaasv2_liberty
+. ./bin/activate
+./tools/populate-conf-from-env
+
+

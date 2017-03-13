@@ -1,0 +1,13 @@
+#!/bin/bash
+
+WORKINGDIRECTORY=/lbaasv2_mitaka
+
+. init-functions
+
+validate_os_creds
+
+cd /lbaasv2_mitaka
+. ./bin/activate
+./tools/populate-conf-from-env
+
+

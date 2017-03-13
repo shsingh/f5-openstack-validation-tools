@@ -1,0 +1,13 @@
+#!/bin/bash
+
+WORKINGDIRECTORY=/lbaasv2_ocata
+
+. init-functions
+
+validate_os_creds
+
+cd /lbaasv2_ocata
+. ./bin/activate
+./tools/populate-conf-from-env
+
+

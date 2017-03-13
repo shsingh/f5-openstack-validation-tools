@@ -1,0 +1,13 @@
+#!/bin/bash
+
+WORKINGDIRECTORY=/lbaasv2_newton
+
+. init-functions
+
+validate_os_creds
+
+cd /lbaasv2_newton
+. ./bin/activate
+./tools/populate-conf-from-env
+
+
