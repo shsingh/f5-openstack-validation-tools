@@ -81,7 +81,7 @@ The tools are present to validate your Newton cloud, but Newton is not qualified
 
 #### Validating your Neutron LBaaSv2 Ocata environment ####
 
-The tools are present to validate your Ocata cloud, but Newton is not qualified by F5 at this time.
+The tools are present to validate your Ocata cloud, but Ocata is not qualified by F5 at this time.
 
 
 #### Importing TMOS Virtual Edition images into your cloud ####
