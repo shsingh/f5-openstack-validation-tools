@@ -19,11 +19,6 @@ Run docker build from the Docker file.
 #### Source a test environment ####
 Once your docker container is running you can source a test environment from various init files. You can either download and source your cloud RC file or by sourcing the init files for the environments you will be prompted for your cloud credentials.
 
-  . init-lbaasv2_liberty
-  . init-lbaasv2_mitaka
-  . init-lbaasv2_newton
-  . init-lbassv2_ocata
-```
 
 #### Validating your Neutron environment ####
 
