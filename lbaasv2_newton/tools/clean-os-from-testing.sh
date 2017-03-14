@@ -3,7 +3,7 @@
 echo "Cleaning Nova Instances"
 for instance in $(nova list --all-tenants | tail -n +4 | head -n -1 | awk '{print $2}')
 do
-    is_tempest=$(nova show 57b3c194-5f3a-415f-8328-625f55297aa7|grep tempest|wc -l)
+    is_tempest=$(nova show $instance|grep tempest|wc -l)
     if [[ $is_tempest ]]
     then
        nova delete $instance

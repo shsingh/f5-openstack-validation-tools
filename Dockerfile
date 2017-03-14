@@ -47,12 +47,15 @@ RUN git clone https://github.com/openstack/neutron-lbaas.git
 RUN /bin/bash -c "cd /lbaasv2_liberty/neutron-lbaas \
     && git fetch --all \
     && git checkout -b liberty liberty-eol"
-RUN mv ./neutron-lbaas/neutron_lbaas ./
+RUN mkdir neutron_lbaas
+RUN cp -Rf ./neutron-lbaas/neutron_lbaas/* ./neutron_lbaas
 RUN /bin/bash -c "cd /lbaasv2_liberty \
     && source ./bin/activate \
+    && pip install -r ./neutron-lbaas/requirements.txt \
     && pip install -r ./neutron-lbaas/test-requirements.txt \
-    && pip install pyopenssl"
-RUN rm -rf ./neutron-lbaas
+    && mkdir /lbaasv2_liberty/tempest_lib \
+    && cp -Rf /lbaasv2_liberty/lib/python2.7/site-packages/tempest_lib/* /lbaasv2_liberty/tempest_lib/ \
+    && pip install --upgrade eventlet tempest f5-openstack-agent pyopenssl"
 COPY lbaasv2_liberty/dot_testr.conf /lbaasv2_liberty/.testr.conf
 COPY lbaasv2_liberty/f5-agent.conf /lbaasv2_liberty/etc/
 COPY lbaasv2_liberty/tempest.conf /lbaasv2_liberty/etc/
@@ -74,11 +77,16 @@ RUN tempest init lbaasv2_mitaka
 RUN virtualenv lbaasv2_mitaka
 WORKDIR lbaasv2_mitaka
 RUN git clone -b stable/mitaka https://github.com/openstack/neutron-lbaas.git
-RUN mv ./neutron-lbaas/neutron_lbaas ./
-RUN rm -rf ./neutron-lbaas
+RUN mkdir neutron_lbaas
+RUN cp -Rf ./neutron-lbaas/neutron_lbaas/* ./neutron_lbaas
 RUN /bin/bash -c "cd /lbaasv2_mitaka \
     && source ./bin/activate \
-    && pip install -r ./neutron_lbaas/tests/tempest/requirements.txt"
+    && pip install -r ./neutron-lbaas/requirements.txt \
+    && pip install -r ./neutron-lbaas/test-requirements.txt \
+    && pip install -r ./neutron_lbaas/tests/tempest/requirements.txt \
+    && mkdir /lbaasv2_mitaka/tempest \
+    && cp -Rf /lbaasv2_mitaka/lib/python2.7/site-packages/tempest/* /lbaasv2_mitaka/tempest/ \
+    && pip install --upgrade tempest f5-openstack-agent"
 COPY lbaasv2_mitaka/dot_testr.conf /lbaasv2_mitaka/.testr.conf
 COPY lbaasv2_mitaka/f5-agent.conf /lbaasv2_mitaka/etc/
 COPY lbaasv2_mitaka/tempest.conf /lbaasv2_mitaka/etc/
@@ -100,11 +108,13 @@ RUN tempest init lbaasv2_newton
 RUN virtualenv lbaasv2_newton
 WORKDIR lbaasv2_newton
 RUN git clone -b stable/newton https://github.com/openstack/neutron-lbaas.git
-RUN mv ./neutron-lbaas/neutron_lbaas ./
+RUN mkdir neutron_lbaas
+RUN cp -Rf ./neutron-lbaas/neutron_lbaas/* ./neutron_lbaas
 RUN /bin/bash -c "cd /lbaasv2_newton \
     && source ./bin/activate \
-    && pip install -r ./neutron-lbaas/test-requirements.txt"
-RUN rm -rf ./neutron-lbaas
+    && pip install -r ./neutron-lbaas/requirements.txt \
+    && pip install -r ./neutron-lbaas/test-requirements.txt \
+    && pip install f5-openstack-agent"
 COPY lbaasv2_newton/dot_testr.conf /lbaasv2_newton/.testr.conf
 COPY lbaasv2_newton/f5-agent.conf /lbaasv2_newton/etc/
 COPY lbaasv2_newton/tempest.conf /lbaasv2_newton/etc/
@@ -126,11 +136,13 @@ RUN tempest init lbaasv2_ocata
 RUN virtualenv lbaasv2_ocata
 WORKDIR lbaasv2_ocata
 RUN git clone -b stable/ocata https://github.com/openstack/neutron-lbaas.git
-RUN mv ./neutron-lbaas/neutron_lbaas ./
+RUN mkdir neutron_lbaas
+RUN cp -Rf ./neutron-lbaas/neutron_lbaas/* ./neutron_lbaas
 RUN /bin/bash -c "cd /lbaasv2_ocata \
     && source ./bin/activate \
-    && pip install -r ./neutron-lbaas/test-requirements.txt"
-RUN rm -rf ./neutron-lbaas
+    && pip install -r ./neutron-lbaas/requirements.txt \
+    && pip install -r ./neutron-lbaas/test-requirements.txt \
+    && pip install f5-openstack-agent"
 COPY lbaasv2_ocata/dot_testr.conf /lbaasv2_ocata/.testr.conf
 COPY lbaasv2_ocata/f5-agent.conf /lbaasv2_ocata/etc/
 COPY lbaasv2_ocata/tempest.conf /lbaasv2_ocata/etc/

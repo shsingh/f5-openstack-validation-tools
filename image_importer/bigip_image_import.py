@@ -213,7 +213,7 @@ def _upload_bigip_zips_to_web_server(web_server_floating_ip, bigip_images):
     # wait for web server to answer SSH    
     while True:
         if _is_port_open(web_server_floating_ip, 22):
-            print "\tSSH is reachable on web server"
+            print "\tSSH is reachable on web server\n"
             time.sleep(10)
             break
         time.sleep(5)
@@ -232,12 +232,12 @@ def _upload_bigip_zips_to_web_server(web_server_floating_ip, bigip_images):
         print " "
         scp.put(zip_file, '/tmp/%s' % image, callback=sftp_print_totals)
         print "\n"
-        print "\tExtracting F5 images into web directory"
         # deploy the image to the web servers
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
             'sudo mv /tmp/%s /var/www/html/' % image
         )
         print "\tAvailable http://%s/%s" % (web_server_floating_ip, image)
+        print "\n"
 
 
 def _upload_bigip_zip_tar_to_web_server(web_server_floating_ip, bigip_images):
@@ -285,9 +285,23 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
     print " "
     
     for image in bigip_images:
+        
+        image_name = bigip_images[image]['image']
+        glance_image_name = image_name.replace('.qcow2', '')
+        final_image_name = image.replace('.qcow2.zip', '')
+ 
+        gc = _get_glance_client()
+        create_image = True
+        for uploaded_image in gc.images.list():
+            if uploaded_image.name == final_image_name:
+                create_image = False
+        if not create_image:
+            print "\tImage with name %s exists. Skipping." % final_image_name
+            continue
+
         print "\tCreating image for %s" % image
         hc = _get_heat_client()
-        
+                
         private_network = hc.stacks.output_show(
             web_server_stack_id,
             'import_netwwork_id')['output']['output_value']
@@ -295,7 +309,6 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
             web_server_stack_id,
             'web_server_public_ip')['output']['output_value']
 
-        image_name = bigip_images[image]['image']
         f5_ve_image_url = "http://%s/%s" % (web_server_floating_ip, image)
         image_stack_id = hc.stacks.create(
             disable_rollback = True,
@@ -326,12 +339,12 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
             if stack.stack_status in stack_completed:
                 not_complete = False
                 if stack.stack_status == 'CREATE_FAILED':
-                    print "Image importer web server create failed           "
+                    print "\tImage importer web server create failed           "
                     cc = _get_nova_client()
                     cc.keypairs.delete(image_prep_key)
                     sys.exit(1)
                 if stack.stack_status == 'DELETE_COMPLETE':
-                    print "Image importer web server was deleted             "
+                    print "\tImage importer web server was deleted             "
                     cc = _get_nova_client()
                     cc.keypairs.delete(image_prep_key)
                     sys.exit(1)
@@ -345,12 +358,10 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
         
         gc = _get_glance_client()      
         # Fix the name to reflect the actual BIG-IP release name
-        glance_image_name = image_name.replace('.qcow2', '')
         for uploaded_image in gc.images.list():
             if uploaded_image.name == glance_image_name:
-                new_image_name = image.replace('.qcow2.zip', '')
                 gc.images.update(uploaded_image.id,
-                                 name=new_image_name,
+                                 name=final_image_name,
                                  is_public=True,
                                  properties={
                                      'os_vendor':'f5_networks',
@@ -366,6 +377,7 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
                     create_datastor_image = False
                     break
             if create_datastor_image:
+                print "\tCreating Datastor image %s" % datastor_name
                 vepackage = zipfile.ZipFile(bigip_images[image]['file'])
                 vepackage.extract(bigip_images[image]['datastor'])
                 gc.images.create(
@@ -381,6 +393,19 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
                 os.unlink(bigip_images[image]['datastor'])       
         
         print "\n"
+
+        # Let last image stack delete
+        stack_completed = ['DELETE_COMPLETE']
+        while True:
+            stack = hc.stacks.get(image_stack_id)
+            print '\tImage importer status is %s         \r'%stack.stack_status,
+            sys.stdout.flush()
+            if stack.stack_status in stack_completed:
+                not_complete = False
+                break
+            else:
+                time.sleep(5)
+
         
     cc = _get_nova_client()
     cc.keypairs.delete(image_prep_key)
@@ -433,6 +458,7 @@ def main():
     hc.stacks.delete(web_server_stack_id)
     gc = _get_glance_client()
     gc.images.delete(download_server_image)
+    print "Images created\n"
     
 if __name__ == "__main__":
     main()

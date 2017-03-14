@@ -1,13 +1,12 @@
 #!/bin/bash
 
 WORKINGDIRECTORY=/lbaasv2_newton
+export TEMPEST_CONFIG_DIR=$WORKINGDIRECTORY/etc
 
 . init-functions
 
 validate_os_creds
 
-cd /lbaasv2_newton
+cd $WORKINGDIRECTORY
 . ./bin/activate
 ./tools/populate-conf-from-env
-
-
