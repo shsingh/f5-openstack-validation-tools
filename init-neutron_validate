@@ -44,12 +44,12 @@ fi
 if [[ ! $valid_env == 1 ]]
 then
     echo " "
-    echo "Neutron deos not support core functionality which is use in F5 multi-tenant integrations."
+    echo "Neutron deos not support core functionality which is used in F5 multi-tenant integrations."
     echo " "
 else
     echo " "
-	echo "Neutron reports it supports all the core functionality needed for F5 multi-tenant integrations."
-	echo " "
+    echo "Neutron reports it supports all the core functionality needed for F5 multi-tenant integrations."
+    echo " "
 fi
 
 if [[ ! $lbaasv2 == 1 ]]

@@ -69,7 +69,7 @@ COPY lbaasv2_liberty/tools/clean /lbaasv2_liberty/tools/clean
 RUN chmod +x /lbaasv2_liberty/tools/clean
 COPY lbaasv2_liberty/tools/populate-conf-from-env /lbaasv2_liberty/tools/populate-conf-from-env
 RUN chmod +x /lbaasv2_liberty/tools/populate-conf-from-env
-RUN find /lbaasv2_liberty/neutron_lbaas/tests/tempest -exec sed -i 's/127.0.0.1/128.0.0.1/g' {} \; 2>/dev/null
+RUN find /lbaasv2_liberty/neutron_lbaas/tests/tempest/v2 -exec sed -i 's/127.0/128.0/g' {} \; 2>/dev/null
 
 # create lbaasv2 mitaka validation environment
 WORKDIR /
@@ -100,7 +100,7 @@ COPY lbaasv2_mitaka/tools/clean /lbaasv2_mitaka/tools/clean
 RUN chmod +x /lbaasv2_mitaka/tools/clean
 COPY lbaasv2_mitaka/tools/populate-conf-from-env /lbaasv2_mitaka/tools/populate-conf-from-env
 RUN chmod +x /lbaasv2_mitaka/tools/populate-conf-from-env
-RUN find /lbaasv2_mitaka/neutron_lbaas/tests/tempest -exec sed -i 's/127.0.0.1/128.0.0.1/g' {} \; 2>/dev/null
+RUN find /lbaasv2_mitaka/neutron_lbaas/tests/tempest/v2 -exec sed -i 's/127.0/128.0/g' {} \; 2>/dev/null
 
 # create lbaasv2 newton validation environment
 WORKDIR /
@@ -128,7 +128,7 @@ COPY lbaasv2_newton/tools/clean /lbaasv2_newton/tools/clean
 RUN chmod +x /lbaasv2_newton/tools/clean
 COPY lbaasv2_newton/tools/populate-conf-from-env /lbaasv2_newton/tools/populate-conf-from-env
 RUN chmod +x /lbaasv2_newton/tools/populate-conf-from-env
-RUN find /lbaasv2_newton/neutron_lbaas/tests/tempest -exec sed -i 's/127.0.0.1/128.0.0.1/g' {} \; 2>/dev/null
+RUN find /lbaasv2_newton/neutron_lbaas/tests/tempest/v2 -exec sed -i 's/127.0/128.0/g' {} \; 2>/dev/null
 
 # create lbaasv2 ocata validation environment
 WORKDIR /
@@ -156,7 +156,7 @@ COPY lbaasv2_ocata/tools/clean /lbaasv2_ocata/tools/clean
 RUN chmod +x /lbaasv2_ocata/tools/clean
 COPY lbaasv2_ocata/tools/populate-conf-from-env /lbaasv2_ocata/tools/populate-conf-from-env
 RUN chmod +x /lbaasv2_ocata/tools/populate-conf-from-env
-RUN find /lbaasv2_ocata/neutron_lbaas/tests/tempest -exec sed -i 's/127.0.0.1/128.0.0.1/g' {} \; 2>/dev/null
+RUN find /lbaasv2_ocata/neutron_lbaas/tests/tempest/v2 -exec sed -i 's/127.0/128.0/g' {} \; 2>/dev/null
 
 # create image importer
 RUN mkdir image_importer
