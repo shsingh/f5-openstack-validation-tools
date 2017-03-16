@@ -55,10 +55,13 @@ RUN /bin/bash -c "cd /lbaasv2_liberty \
     && pip install -r ./neutron-lbaas/test-requirements.txt \
     && mkdir /lbaasv2_liberty/tempest_lib \
     && cp -Rf /lbaasv2_liberty/lib/python2.7/site-packages/tempest_lib/* /lbaasv2_liberty/tempest_lib/ \
-    && pip install --upgrade eventlet tempest f5-openstack-agent pyopenssl"
+    && pip install --upgrade eventlet tempest f5-openstack-agent pyopenssl junitxml"
 COPY lbaasv2_liberty/dot_testr.conf /lbaasv2_liberty/.testr.conf
 COPY lbaasv2_liberty/f5-agent.conf /lbaasv2_liberty/etc/
 COPY lbaasv2_liberty/tempest.conf /lbaasv2_liberty/etc/
+COPY lbaasv2_liberty/blacklist.txt /lbaasv2_liberty/blacklist.txt
+COPY lbaasv2_liberty/run_tests.sh /lbaasv2_liberty/run_tests.sh
+RUN chmod +x /lbaasv2_liberty/run_tests.sh
 RUN mkdir /lbaasv2_liberty/tools/
 COPY lbaasv2_liberty/tools/clean-os-from-testing.sh /lbaasv2_liberty/tools/clean-os-from-testing.sh
 RUN chmod +x /lbaasv2_liberty/tools/clean-os-from-testing.sh
@@ -86,10 +89,13 @@ RUN /bin/bash -c "cd /lbaasv2_mitaka \
     && pip install -r ./neutron_lbaas/tests/tempest/requirements.txt \
     && mkdir /lbaasv2_mitaka/tempest \
     && cp -Rf /lbaasv2_mitaka/lib/python2.7/site-packages/tempest/* /lbaasv2_mitaka/tempest/ \
-    && pip install --upgrade tempest f5-openstack-agent"
+    && pip install --upgrade tempest f5-openstack-agent junitxml"
 COPY lbaasv2_mitaka/dot_testr.conf /lbaasv2_mitaka/.testr.conf
 COPY lbaasv2_mitaka/f5-agent.conf /lbaasv2_mitaka/etc/
 COPY lbaasv2_mitaka/tempest.conf /lbaasv2_mitaka/etc/
+COPY lbaasv2_mitaka/blacklist.txt /lbaasv2_mitaka/blacklist.txt
+COPY lbaasv2_mitaka/run_tests.sh /lbaasv2_mitaka/run_tests.sh
+RUN chmod +x /lbaasv2_mitaka/run_tests.sh
 RUN mkdir /lbaasv2_mitaka/tools/
 COPY lbaasv2_mitaka/tools/clean-os-from-testing.sh /lbaasv2_mitaka/tools/clean-os-from-testing.sh
 RUN chmod +x /lbaasv2_mitaka/tools/clean-os-from-testing.sh
@@ -114,10 +120,13 @@ RUN /bin/bash -c "cd /lbaasv2_newton \
     && source ./bin/activate \
     && pip install -r ./neutron-lbaas/requirements.txt \
     && pip install -r ./neutron-lbaas/test-requirements.txt \
-    && pip install f5-openstack-agent"
+    && pip install f5-openstack-agent junitxml"
 COPY lbaasv2_newton/dot_testr.conf /lbaasv2_newton/.testr.conf
 COPY lbaasv2_newton/f5-agent.conf /lbaasv2_newton/etc/
 COPY lbaasv2_newton/tempest.conf /lbaasv2_newton/etc/
+COPY lbaasv2_newton/blacklist.txt /lbaasv2_newton/blacklist.txt
+COPY lbaasv2_newton/run_tests.sh /lbaasv2_newton/run_tests.sh
+RUN chmod +x /lbaasv2_newton/run_tests.sh
 RUN mkdir /lbaasv2_newton/tools/
 COPY lbaasv2_newton/tools/clean-os-from-testing.sh /lbaasv2_newton/tools/clean-os-from-testing.sh
 RUN chmod +x /lbaasv2_newton/tools/clean-os-from-testing.sh
@@ -142,10 +151,13 @@ RUN /bin/bash -c "cd /lbaasv2_ocata \
     && source ./bin/activate \
     && pip install -r ./neutron-lbaas/requirements.txt \
     && pip install -r ./neutron-lbaas/test-requirements.txt \
-    && pip install f5-openstack-agent"
+    && pip install f5-openstack-agent junitxml"
 COPY lbaasv2_ocata/dot_testr.conf /lbaasv2_ocata/.testr.conf
 COPY lbaasv2_ocata/f5-agent.conf /lbaasv2_ocata/etc/
 COPY lbaasv2_ocata/tempest.conf /lbaasv2_ocata/etc/
+COPY lbaasv2_ocata/blacklist.txt /lbaasv2_ocata/blacklist.txt
+COPY lbaasv2_ocata/run_tests.sh /lbaasv2_ocata/run_tests.sh
+RUN chmod +x /lbaasv2_ocata/run_tests.sh
 RUN mkdir /lbaasv2_ocata/tools/
 COPY lbaasv2_ocata/tools/clean-os-from-testing.sh /lbaasv2_ocata/tools/clean-os-from-testing.sh
 RUN chmod +x /lbaasv2_ocata/tools/clean-os-from-testing.sh

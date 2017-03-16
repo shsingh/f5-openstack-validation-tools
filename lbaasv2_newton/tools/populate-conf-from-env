@@ -23,6 +23,32 @@ do
     fi
 done
 
+if [[ ! -z $BIGIP_USERNAME ]]
+then
+    sed -i "s/icontrol_username.*/icontrol_username = $BIGIP_USERNAME/" $DIR/../etc/f5-agent.conf
+fi
+
+if [[ ! -z $BIGIP_PASSWORD ]]
+then
+    sed -i "s/icontrol_password.*/icontrol_password = $BIGIP_PASSWORD/" $DIR/../etc/f5-agent.conf
+fi
+
+if [[ ! -z $BIGIP_ENVIRONMENT_PREFIX ]]
+then
+    sed -i "s/environment_prefix.*/environment_prefix = $BIGIP_ENVIRONMENT_PREFIX/" $DIR/../etc/f5-agent.conf
+fi
+
+agent_id=$(neutron agent-list | grep f5-oslbaasv2-agent | grep ':-)' | awk '{print $2}')
+if [[ ${agent_id//-/} =~ ^[[:xdigit:]]{32}$ ]]
+then
+    env_prefix=$(neutron agent-show $agent_id | grep environment_prefix | awk '{print $4}' | sed -e 's/^"//' -e 's/",$//')
+    if [[ "$env_prefix" == "$BIGIP_ENVIRONMENT_PREFIX" ]]
+    then
+        icontrol_endpoints=$(neutron agent-show $agent_id -F configurations -f json | python -c 'import sys,json; data=json.loads(sys.stdin.read()); eps=json.loads(data[0]["Value"]); print ",".join(eps["icontrol_endpoints"].keys())')
+        sed -i "s/icontrol_hostname.*/icontrol_hostname = $icontrol_endpoints/" $DIR/../etc/f5-agent.conf
+    fi
+fi
+
 download_cirros=1
 
 for image in $(nova image-list | tail -n +4 | head -n -1 | awk '{print $2}')
