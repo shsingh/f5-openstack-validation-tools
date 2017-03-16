@@ -22,6 +22,17 @@ COPY init-functions ./
 COPY init-neutron_validate ./
 RUN chmod +x ./init-neutron_validate
 
+# create neutron liberty validation environment
+WORKDIR /
+COPY init-neutron_liberty ./
+RUN chmod +x ./init-neutron_liberty
+RUN tempest init neutron_liberty
+RUN virtualenv neutron_liberty
+COPY neutron_liberty/ /neutron_liberty/
+WORKDIR neutron_liberty
+RUN /bin/bash install.sh
+RUN rm -rf install.sh
+
 # create lbaasv2 liberty validation environment
 WORKDIR /
 COPY init-lbaasv2_liberty ./
@@ -30,6 +41,17 @@ RUN tempest init lbaasv2_liberty
 RUN virtualenv lbaasv2_liberty
 COPY lbaasv2_liberty/ /lbaasv2_liberty/
 WORKDIR lbaasv2_liberty
+RUN /bin/bash install.sh
+RUN rm -rf install.sh
+
+# create neutron mitaka validation environment
+WORKDIR /
+COPY init-neutron_mitaka ./
+RUN chmod +x ./init-neutron_mitaka
+RUN tempest init neutron_mitaka
+RUN virtualenv neutron_mitaka
+COPY neutron_mitaka/ /neutron_mitaka/
+WORKDIR neutron_mitaka
 RUN /bin/bash install.sh
 RUN rm -rf install.sh
 
@@ -45,26 +67,26 @@ RUN /bin/bash install.sh
 RUN rm -rf install.sh
 
 # create lbaasv2 newton validation environment
-WORKDIR /
-COPY init-lbaasv2_newton ./
-RUN chmod +x ./init-lbaasv2_newton
-RUN tempest init lbaasv2_newton
-RUN virtualenv lbaasv2_newton
-COPY lbaasv2_newton/ /lbaasv2_newton/
-WORKDIR lbaasv2_newton
-RUN /bin/bash install.sh
-RUN rm -rf install.sh
+#WORKDIR /
+#COPY init-lbaasv2_newton ./
+#RUN chmod +x ./init-lbaasv2_newton
+#RUN tempest init lbaasv2_newton
+#RUN virtualenv lbaasv2_newton
+#COPY lbaasv2_newton/ /lbaasv2_newton/
+#WORKDIR lbaasv2_newton
+#RUN /bin/bash install.sh
+#RUN rm -rf install.sh
 
 # create lbaasv2 ocata validation environment
-WORKDIR /
-COPY init-lbaasv2_ocata ./
-RUN chmod +x ./init-lbaasv2_ocata
-RUN tempest init lbaasv2_ocata
-RUN virtualenv lbaasv2_ocata
-COPY lbaasv2_ocata/ /lbaasv2_ocata/
-WORKDIR lbaasv2_ocata
-RUN /bin/bash install.sh
-RUN rm -rf install.sh
+#WORKDIR /
+#COPY init-lbaasv2_ocata ./
+#RUN chmod +x ./init-lbaasv2_ocata
+#RUN tempest init lbaasv2_ocata
+#RUN virtualenv lbaasv2_ocata
+#COPY lbaasv2_ocata/ /lbaasv2_ocata/
+#WORKDIR lbaasv2_ocata
+#RUN /bin/bash install.sh
+#RUN rm -rf install.sh
 
 # create image importer
 WORKDIR /

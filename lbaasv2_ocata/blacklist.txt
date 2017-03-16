@@ -1,7 +1,7 @@
 # Regex file
 
 #
-# Blacklist for Mikata neutron-lbaas tests
+# Blacklist for Ocata neutron-lbaas tests
 #
 
 # Test for Non-supported Features
