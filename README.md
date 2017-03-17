@@ -17,10 +17,24 @@ Run docker build from the Docker file.
 ```
 
 #### Source a test environment ####
-Once your docker container is running you can source a test environment from various init files. You can either download and source your cloud RC file or by sourcing the init files for the environments you will be prompted for your cloud credentials.
 
+Once your docker container is running you can source a test environment from various init files. Each test environment has a initialization script which will query your cloud for required testing configuration. 
 
-#### Validating your Neutron environment ####
+You can download yor cloud RC file to your container and source the environment
+
+```
+   . overcloudrc
+```
+or the initialization script will prompt for your cloud credentials.
+
+```
+  OpenStack Tenant: admin
+  OpenStack Username: admin
+  OpenStack Password:
+  OpenStack Auth URL: http://controller:5000/v2.0
+```
+
+#### Validating your Neutron environment for use with F5 Multi-Tenant Services####
 
 Simply intialize the neutron-valdation environment.
 
@@ -28,15 +42,62 @@ Simply intialize the neutron-valdation environment.
   . init-neutron_validate
 ```
 
-#### Validating your Neutron LBaaSv2 Liberty environment ####
+To exit your test environment simply run:
+
+```
+  finished
+```
+
+
+
+
+
+#### Validating your Liberty Neutron environment ####
 
 Simply intialize the neutron-valdation environment.
+
+```
+  . init-neutron_liberty
+```
+
+Once you have initialized the environment you run the validation tests simply run: 
+
+```
+  ./run_tests.sh
+```
+
+Alternatively you can list and run test using the ```testr``` or ```tempest``` community tools.
+
+```
+  testr list-tests
+  tempest run --regex '.*smoke'
+  testr failing
+```
+
+To exit your test environment simply run:
+
+```
+  finished
+```
+
+
+#### Validating your Liberty Neutron LBaaSv2 environment ####
+
+Once your LBaaSv2 environment is setup you can test the validity of your environment.
+
+Simply intialize the LBaaSv2 valdation environment.
 
 ```
   . init-lbaasv2_liberty
 ```
 
-Once you have initialized the environment you can list and run test using the testr or tempest tools.
+Once you have initialized the environment you run the validation tests simply run: 
+
+```
+  ./run_tests.sh
+```
+
+Alternatively you can list and run test using the ```testr``` or ```tempest``` community tools.
 
 ```
   testr list-tests
@@ -44,22 +105,63 @@ Once you have initialized the environment you can list and run test using the te
   testr failing
 ```
 
-Once your testing is complete you can exit the environment.
+To exit your test environment simply run:
 
 ```
-  deactivate
-  cd /
+  finished
 ```
 
-#### Validating your Neutron LBaaSv2 Mitaka environment ####
+
+
+
+
+
+#### Validating your Mitaka Neutron environment ####
 
 Simply intialize the neutron-valdation environment.
+
+```
+  . init-neutron_mitaka
+```
+
+Once you have initialized the environment you run the validation tests simply run: 
+
+```
+  ./run_tests.sh
+```
+
+Alternatively you can list and run test using the ```testr``` or ```tempest``` community tools.
+
+```
+  testr list-tests
+  tempest run --regex '.*smoke'
+  testr failing
+```
+
+To exit your test environment simply run:
+
+```
+  finished
+```
+
+
+#### Validating your Mitaka Neutron LBaaSv2 environment ####
+
+Once your LBaaSv2 environment is setup you can test the validity of your environment.
+
+Simply intialize the LBaaSv2 valdation environment.
 
 ```
   . init-lbaasv2_mitaka
 ```
 
-Once you have initialized the environment you can list and run test using the testr or tempest tools.
+Once you have initialized the environment you run the validation tests simply run: 
+
+```
+  ./run_tests.sh
+```
+
+Alternatively you can list and run test using the ```testr``` or ```tempest``` community tools.
 
 ```
   testr list-tests
@@ -67,21 +169,13 @@ Once you have initialized the environment you can list and run test using the te
   testr failing
 ```
 
-Once your testing is complete you can exit the environment.
+To exit your test environment simply run:
 
 ```
-  deactivate
-  cd /
+  finished
 ```
 
-#### Validating your Neutron LBaaSv2 Newton environment ####
 
-The tools are present to validate your Newton cloud, but Newton is not qualified by F5 at this time.
-
-
-#### Validating your Neutron LBaaSv2 Ocata environment ####
-
-The tools are present to validate your Ocata cloud, but Ocata is not qualified by F5 at this time.
 
 
 #### Importing TMOS Virtual Edition images into your cloud ####
@@ -98,10 +192,10 @@ All F5 TMOS Virtual Edition zip files in that directory will be patched and uplo
    . init-image_importer
 ```
 
-If your LBaaSv2 tests leave residual configuration objects on your BIG-IPs you can clean your environment by adding your BIG-IP credentials to the f5-agent.conf file in your environment and then using the cleaning tool. 
+#### Cleaning your environemnt after failed tests ####
+
+If your tests leave residual configuration objects on your BIG-IPs you can clean your environment using the cleaning tool. From within the environment you can issue the following command:
 
 ```
-  vi ./etc/f5-agent.conf
   ./tools/clean
 ```
-
