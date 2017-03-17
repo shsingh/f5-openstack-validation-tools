@@ -97,13 +97,16 @@ def _get_heat_client():
 
 def _download_file(url):
     local_filename = url.split('/')[-1]
+    cached_file = "%s/%s" % (os.environ['IMAGE_DIR'], local_filename)
+    if os.path.isfile(cached_file):
+        return cached_file
     r = requests.get(url)
-    f = open(local_filename, 'wb')
+    f = open(cached_file, 'wb')
     for chunk in r.iter_content(chunk_size=512 * 1024): 
         if chunk: 
             f.write(chunk)
     f.close()
-    return local_filename
+    return cached_filename
 
 
 def _upload_image_to_glance(local_file_name, image_name, is_public):
@@ -458,7 +461,7 @@ def main():
     hc.stacks.delete(web_server_stack_id)
     gc = _get_glance_client()
     gc.images.delete(download_server_image)
-    print "Images created\n"
+    print "\nImages Imported Successfully\n"
     
 if __name__ == "__main__":
     main()
