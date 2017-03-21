@@ -6,8 +6,6 @@ This is a CentOS 7.3 based installation with global utilities and test tools ins
 
 For environments which require their own version of tools,  the installation process for the environment will properly install them.
 
-#
-
 ## Building the Validation Image
 
 Clone the git repository to a host with docker installed.
