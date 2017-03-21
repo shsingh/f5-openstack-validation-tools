@@ -20,6 +20,8 @@ Edit the Dockerfile to enable the testing environments you wish to build. Remove
   vi ./f5_openstack_validation_tools/Dockerfile
 ```
 
+By default the ```validate_neutron_for_f5_services```, ```neutron_mitaka```, ```lbaasv2_mitaka```, and ``image_importer`` environments are enabled.
+
 **Disabled environment**
 
 ```
