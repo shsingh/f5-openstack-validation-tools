@@ -3,10 +3,33 @@ Tools to validate and test OpenStack cloud with F5 installations
 
 CentOS 7.3 based installation of Tempest for OpenStack Mitaka
 
-Run docker build from the Docker file.
+Clone the git repository to a host with docker installed.
 
 ```
   git clone https://github.com/jgruber/f5_openstack_validation_tools.git
+```
+
+Edit the Dockerfile to enable the testing environments you wish to build. Remove the comment hash before the line setting the environment enabled variable for the container.
+
+```
+  vi ./f5_openstack_validation_tools/Dockerfile
+```
+
+**Disabled environment**
+
+```
+ # ENV enable_lbaasv2_mitaka=1
+```
+
+**Enabled environment**
+
+```
+ ENV enable_lbaasv2_mitaka=1
+```
+
+Run docker build from the Dockerfile.
+
+```
   docker build -t f5_openstack_validation_tools ./f5_openstack_validation_tools
 ```
 
@@ -34,22 +57,30 @@ or the initialization script will prompt for your cloud credentials.
   OpenStack Auth URL: http://controller:5000/v2.0
 ```
 
+To initialize a test environment source its init script. 
+
+As an example, for the lbaav2_mitaka test environment, you would source the init script as follows.
+
+
+```
+  . init-lbaasv2_mitaka
+```
+
+All environment init scripts are in the root of the container file system.
+
+
+## Instructions for specific environments 
+
+
 #### Validating your Neutron environment for use with F5 Multi-Tenant Services####
 
 Simply intialize the neutron-valdation environment.
 
 ```
-  . init-neutron_validate
+  . init-validate_neutron_for_f5_services
 ```
 
-To exit your test environment simply run:
-
-```
-  finished
-```
-
-
-
+This environment is not interactive and exits when finished running.
 
 
 #### Validating your Liberty Neutron environment ####
@@ -74,7 +105,13 @@ Alternatively you can list and run test using the ```testr``` or ```tempest``` c
   testr failing
 ```
 
-To exit your test environment simply run:
+If tests failures leave residual configuration objects on your BIG-IPs you can clean your environment using the cleaning tool. From within the environment you can issue the following command:
+
+```
+  ./tools/clean
+```
+
+To exit this test environment simply run:
 
 ```
   finished
@@ -105,15 +142,17 @@ Alternatively you can list and run test using the ```testr``` or ```tempest``` c
   testr failing
 ```
 
-To exit your test environment simply run:
+If tests failures leave residual configuration objects on your BIG-IPs you can clean your environment using the cleaning tool. From within the environment you can issue the following command:
+
+```
+  ./tools/clean
+```
+
+To exit this test environment simply run:
 
 ```
   finished
 ```
-
-
-
-
 
 
 #### Validating your Mitaka Neutron environment ####
@@ -138,7 +177,13 @@ Alternatively you can list and run test using the ```testr``` or ```tempest``` c
   testr failing
 ```
 
-To exit your test environment simply run:
+If tests failures leave residual configuration objects on your BIG-IPs you can clean your environment using the cleaning tool. From within the environment you can issue the following command:
+
+```
+  ./tools/clean
+```
+
+To exit this test environment simply run:
 
 ```
   finished
@@ -169,13 +214,17 @@ Alternatively you can list and run test using the ```testr``` or ```tempest``` c
   testr failing
 ```
 
-To exit your test environment simply run:
+If tests failures leave residual configuration objects on your BIG-IPs you can clean your environment using the cleaning tool. From within the environment you can issue the following command:
+
+```
+  ./tools/clean
+```
+
+To exit this test environment simply run:
 
 ```
   finished
 ```
-
-
 
 
 #### Importing TMOS Virtual Edition images into your cloud ####
@@ -192,10 +241,4 @@ All F5 TMOS Virtual Edition zip files in that directory will be patched and uplo
    . init-image_importer
 ```
 
-#### Cleaning your environemnt after failed tests ####
 
-If your tests leave residual configuration objects on your BIG-IPs you can clean your environment using the cleaning tool. From within the environment you can issue the following command:
-
-```
-  ./tools/clean
-```

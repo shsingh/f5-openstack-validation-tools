@@ -1,100 +1,61 @@
 FROM centos:7.3.1611
 MAINTAINER John Gruber "j.gruber@f5.com"
 
-# add the CentOS Mitaka repo
+# add the CentOS Mitaka repo as a starting point
 RUN yum -y install centos-release-openstack-mitaka
 RUN yum -y update
+# install development tools for environment builds
 RUN yum -y groups mark install "Development Tools"
 RUN yum -y groups mark convert "Development Tools"
 RUN yum -y groupinstall "Development Tools"
-RUN yum -y install openssl-devel libffi libffi-devel python-devel git python-pip python-openstackclient python-heatclient
+# install what we need for environemnt build and to 
+# make the test client a good diagnostic tool.
+RUN yum -y install ansible openssl-devel libffi libffi-devel python-devel git python-pip python-openstackclient python-heatclient
 
-# update key python libraries
+# update key python tools and libraries
 RUN pip install --upgrade pip setuptools virtualenv tempest ipython
 
-# add f5-openstack-agent libraries
+# add interesting f5 tools
 RUN git clone -b mitaka https://github.com/F5Networks/f5-openstack-agent.git
 RUN pip install /f5-openstack-agent/
 RUN rm -rf /f5-openstack-agent
 
 # copy init environment functions
 COPY init-functions ./
-COPY init-neutron_validate ./
-RUN chmod +x ./init-neutron_validate
+COPY init-validate_neutron_for_f5_services ./
+RUN chmod +x ./init-validate_neutron_for_f5_services
+COPY environments/ /environments/
 
-# create neutron liberty validation environment
-WORKDIR /
-COPY init-neutron_liberty ./
-RUN chmod +x ./init-neutron_liberty
-RUN tempest init neutron_liberty
-RUN virtualenv neutron_liberty
-COPY neutron_liberty/ /neutron_liberty/
-WORKDIR neutron_liberty
-RUN /bin/bash install.sh
-RUN rm -rf install.sh
+# Uncomment the ENV setting to enable specific testing environments
 
-# create lbaasv2 liberty validation environment
-WORKDIR /
-COPY init-lbaasv2_liberty ./
-RUN chmod +x ./init-lbaasv2_liberty
-RUN tempest init lbaasv2_liberty
-RUN virtualenv lbaasv2_liberty
-COPY lbaasv2_liberty/ /lbaasv2_liberty/
-WORKDIR lbaasv2_liberty
-RUN /bin/bash install.sh
-RUN rm -rf install.sh
+# test neutron in a liberty openstack cloud
+# ENV enable_neutron_liberty=1
 
-# create neutron mitaka validation environment
-WORKDIR /
-COPY init-neutron_mitaka ./
-RUN chmod +x ./init-neutron_mitaka
-RUN tempest init neutron_mitaka
-RUN virtualenv neutron_mitaka
-COPY neutron_mitaka/ /neutron_mitaka/
-WORKDIR neutron_mitaka
-RUN /bin/bash install.sh
-RUN rm -rf install.sh
+# test neutron lbaasv2 in a liberty openstack cloud 
+# ENV enable_lbaasv2_liberty=1
 
-# create lbaasv2 mitaka validation environment
-WORKDIR /
-COPY init-lbaasv2_mitaka ./
-RUN chmod +x ./init-lbaasv2_mitaka
-RUN tempest init lbaasv2_mitaka
-RUN virtualenv lbaasv2_mitaka
-COPY lbaasv2_mitaka/ /lbaasv2_mitaka/
-WORKDIR lbaasv2_mitaka
-RUN /bin/bash install.sh
-RUN rm -rf install.sh
+# test neutron in a mitaka openstack cloud
+ENV enable_neutron_mitaka=1
 
-# create lbaasv2 newton validation environment
-#WORKDIR /
-#COPY init-lbaasv2_newton ./
-#RUN chmod +x ./init-lbaasv2_newton
-#RUN tempest init lbaasv2_newton
-#RUN virtualenv lbaasv2_newton
-#COPY lbaasv2_newton/ /lbaasv2_newton/
-#WORKDIR lbaasv2_newton
-#RUN /bin/bash install.sh
-#RUN rm -rf install.sh
+# test neutron lbaasv2 in a mitaka openstack cloud 
+ENV enable_lbaasv2_mitaka=1
 
-# create lbaasv2 ocata validation environment
-#WORKDIR /
-#COPY init-lbaasv2_ocata ./
-#RUN chmod +x ./init-lbaasv2_ocata
-#RUN tempest init lbaasv2_ocata
-#RUN virtualenv lbaasv2_ocata
-#COPY lbaasv2_ocata/ /lbaasv2_ocata/
-#WORKDIR lbaasv2_ocata
-#RUN /bin/bash install.sh
-#RUN rm -rf install.sh
+# test neutron in a newton openstack cloud
+# ENV enable_neutron_newton=1
 
-# create image importer
-WORKDIR /
-COPY init-image_importer ./
-RUN chmod +x ./init-image_importer
-RUN mkdir image_importer
-COPY image_importer/bigip_image_import.py /image_importer/bigip_image_import.py
-COPY image_importer/bigip_image_importer_webserver.yaml /image_importer/bigip_image_importer_webserver.yaml 
+# test neutron lbaasv2 in a newton openstack cloud 
+# ENV enable_lbaasv2_newton=1
+
+# test neutron in a ocata openstack cloud
+# ENV enable_neutron_ocata=1
+
+# test neutron lbaasv2 in a ocata openstack cloud 
+# ENV enable_lbaasv2_ocata=1
+
+# creat TMOS Virtual Edition images for OpenStack
+ENV enable_image_importer=1
+
+RUN /environments/install.sh
 
 WORKDIR /
 # run interactively

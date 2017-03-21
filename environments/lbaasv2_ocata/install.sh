@@ -1,6 +1,27 @@
 #!/bin/bash
 
-DIR=/lbaasv2_ocata
+ENV=lbaasv2_ocata
+
+enabled_var="enable_$ENV"
+
+if [[ ! ${!enabled_var} == 1 ]]
+then
+    echo "$ENV disabled"
+    exit 0
+else
+    echo "installing $ENV"
+fi
+
+DIR=/$ENV
+
+# initialize the environment
+cd /
+tempest init $ENV
+virtualenv $ENV
+cp -R /environments${DIR}/. $DIR/
+cp $DIR/init-$ENV /init-$ENV
+chmod +x /init-$ENV
+
 
 # Get correct version of the software to test and
 # copy to the working directory for the environemnt
