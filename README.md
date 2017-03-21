@@ -1,7 +1,13 @@
 # F5 OpenStack Validation Tools
-Tools to validate and test OpenStack cloud with F5 installations
+####Tools to interactively validate and test OpenStack clouds with F5 installations#
 
-CentOS 7.3 based installation of Tempest for OpenStack Mitaka
+This is a CentOS 7.3 based installation with global utilities and test tools installed from the OpenStack Mitaka release packages. 
+
+For environments which require their own version of tools,  the installation process for the environment will properly install them.
+
+#
+
+## Building the Validation Image
 
 Clone the git repository to a host with docker installed.
 
@@ -33,7 +39,7 @@ Run docker build from the Dockerfile.
   docker build -t f5_openstack_validation_tools ./f5_openstack_validation_tools
 ```
 
-#### Run an interactive docker container ####
+## Running the Validation Container
 
 ```
   docker run -t -i --name f5_openstack_validation_tools -v [F5_VE_zip_package_dir]:/bigip_images  f5_openstack_validation_tools
@@ -69,7 +75,7 @@ As an example, for the lbaav2_mitaka test environment, you would source the init
 All environment init scripts are in the root of the container file system.
 
 
-## Instructions for specific environments 
+## Instructions for Validating Specific Environments 
 
 
 #### Validating your Neutron environment for use with F5 Multi-Tenant Services####
