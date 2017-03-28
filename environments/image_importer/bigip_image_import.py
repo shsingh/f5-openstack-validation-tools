@@ -106,7 +106,7 @@ def _download_file(url):
         if chunk: 
             f.write(chunk)
     f.close()
-    return cached_filename
+    return cached_file
 
 
 def _upload_image_to_glance(local_file_name, image_name, is_public):
@@ -279,6 +279,15 @@ def _upload_bigip_zip_tar_to_web_server(web_server_floating_ip, bigip_images):
     print " "    
 
 
+def _get_heat_output_value(stack_id, output_name):
+    hc = _get_heat_client()
+    stack = hc.stacks.get(stack_id)
+    for output in stack.outputs:
+        if output['output_key'] == output_name:
+            return output['output_value']
+    return None
+
+
 def _create_glance_images(f5_heat_template_file, download_server_image,
                           web_server_stack_id, bigip_images):
     f5_image_template = open(f5_heat_template_file, 'r').read()
@@ -304,19 +313,16 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
 
         print "\tCreating image for %s" % image
         hc = _get_heat_client()
-                
-        private_network = hc.stacks.output_show(
-            web_server_stack_id,
-            'import_netwwork_id')['output']['output_value']
-        web_server_floating_ip = hc.stacks.output_show(
-            web_server_stack_id,
-            'web_server_public_ip')['output']['output_value']
+        private_network = _get_heat_output_value(web_server_stack_id,
+                                                 'import_network_id')
+        web_server_floating_ip = _get_heat_output_value(web_server_stack_id,
+                                                        'web_server_public_ip')
 
         f5_ve_image_url = "http://%s/%s" % (web_server_floating_ip, image)
         image_stack_id = hc.stacks.create(
             disable_rollback = True,
             parameters = { "onboard_image": download_server_image, 
-                           "flavor": 2,
+                           "flavor": "3",
                            "use_config_drive": True,
                            "private_network": private_network,
                            "f5_image_import_auth_url": os.environ['OS_AUTH_URL'],
@@ -438,11 +444,8 @@ def main():
     # create web server as an image repo
     print "Creating web server for F5 image repo"
     web_server_stack_id = _create_web_server(download_server_image, ext_net)
-    # get the floating IP for the image repo server
-    hc = _get_heat_client()
-    web_server_floating_ip = hc.stacks.output_show(
-        web_server_stack_id,
-        'web_server_public_ip')['output']['output_value']
+    web_server_floating_ip = _get_heat_output_value(web_server_stack_id,
+                                                    'web_server_public_ip')
     print "\tweb server available at: %s         \n" % web_server_floating_ip
     # upload F5 images to the repo
     # print "Creating upload F5 image package for web server"
@@ -461,7 +464,7 @@ def main():
     hc.stacks.delete(web_server_stack_id)
     gc = _get_glance_client()
     gc.images.delete(download_server_image)
-    print "\nImages Imported Successfully\n"
+    print "\n\nImages Imported Successfully\n"
     
 if __name__ == "__main__":
     main()

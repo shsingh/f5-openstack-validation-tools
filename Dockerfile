@@ -29,10 +29,10 @@ COPY environments/ /environments/
 # Uncomment the ENV setting to enable specific testing environments
 
 # test neutron in a liberty openstack cloud
-# ENV enable_neutron_liberty=1
+ENV enable_neutron_liberty=1
 
 # test neutron lbaasv2 in a liberty openstack cloud 
-# ENV enable_lbaasv2_liberty=1
+ENV enable_lbaasv2_liberty=1
 
 # test neutron in a mitaka openstack cloud
 ENV enable_neutron_mitaka=1

@@ -113,7 +113,7 @@ resources:
               - apache2
             
 outputs:
-  import_netwwork_id:
+  import_network_id:
     description: Importer Network
     value: { get_resource: importer_network }
   importer_subnet_id:

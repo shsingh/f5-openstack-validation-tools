@@ -45,7 +45,7 @@ for network in $(neutron net-list | tail -n +4 | head -n -1 | awk '{print $2}')
 do
     network_name=$(neutron net-show $network | grep name | awk '{print $4}')
     subnets_id=$(neutron net-show $network | grep subnets | awk '{print $4}')
-    if [[ $network_name == tempest* || $network_name == network-* ]]
+    if [[ $network_name == tempest* || $network_name == network-* || $network_name == Test* ]]
     then  
         neutron port-list|grep $subnets_id|while read line ; do port_id=$(echo $line|awk '{print $2}'); echo "deleting neutron port $port_id"; neutron port-delete $port_id; done
         echo "deleting neutron subnet $subnets_id"
@@ -58,7 +58,7 @@ done
 for project in $(openstack project list | tail -n +4 | head -n -1 | awk '{print $2}')
 do
     project_name=$(openstack project show $project | grep name | awk '{print $4}')
-    if [[ $project_name == tempest* ]]
+    if [[ $project_name == tempest* || $project_name == Test* ]]
     then
         echo "deleting stranded project $project_name from OpenStack"
         openstack project delete $project
