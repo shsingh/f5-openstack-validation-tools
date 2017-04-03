@@ -12,12 +12,26 @@ F5_IMAGE_TEMPLATE = 'https://raw.githubusercontent.com/F5Networks/f5-openstack-h
 CONTAINERFORMAT = 'bare'
 DISKFORMAT = 'qcow2'
 
+VE_PROPS = {'ALL': {'os_product':'F5 TMOS Virtual Edition for All Modules. 160G disk, 8 or 16G RAM, 4 or 8 vCPUs.'},
+            'LTM': {'os_product':'F5 TMOS Virtual Edition for Local Traffic Manager 40G disk, 4 or 8G RAM, 2 or 4 vCPUs.'},
+            '1SLOT': {'os_product':'F5 TMOS Virtual Edition for Local Traffic Manager - Small Footprint Single Version. 8G disk, 4G RAM, 1 vCPUs.'},
+            'iWorkflow': {'os_product':'F5 TMOS Virtual Edition for iWorkflow Orchestration Services. 160G disk, 4G RAM, 2 vCPUs.'},
+            'BIG-IQ': {'os_product':'F5 TMOS Virtual Edition for BIG-IQ Configuration Management Server. 160G disk, 4G RAM, 2 vCPUs.'}}
+
+VE_REQ = {'ALL': {'min_disk':'160', 'min_ram':'8192'},
+          'LTM': {'min_disk':'40', 'min_ram':'4096'},
+          '1SLOT': {'min_disk':'8', 'min_ram':'2048'},
+          'iWorkflow': {'min_disk':'160', 'min_ram':'4096'},
+          'BIG-IQ': {'min_disk':'160', 'min_ram':'4096'}}
+
 
 def _make_bigip_inventory():
     if not 'IMAGE_DIR' in os.environ: 
         return None
 
     bigip_images = {}
+    
+    # BIGIP and BIG-IQ Image Packages
     for file in glob.glob("%s/BIG*.zip" % os.environ['IMAGE_DIR']):
         vepackage = zipfile.ZipFile(file)
         filename = os.path.basename(file)
@@ -33,8 +47,37 @@ def _make_bigip_inventory():
                     bigip_images[filename]['image'] = packed.filename
                 else:
                     bigip_images[filename]['datastor'] = packed.filename
+    
+    # iWorkflow Image Packages
+    for file in glob.glob("%s/iWorkflow*.zip" % os.environ['IMAGE_DIR']):
+        vepackage = zipfile.ZipFile(file)
+        filename = os.path.basename(file)
+        for packed in vepackage.filelist:
+            if packed.filename.startswith(filename[:8]) and \
+               packed.filename.endswith('qcow2'): 
+                if not filename in bigip_images:
+                    bigip_images[filename] = {'image': None,
+                                              'datastor': None,
+                                              'file': file,
+                                              'archname': filename}
+                if packed.filename.find('DATASTOR') < 0:
+                    bigip_images[filename]['image'] = packed.filename
+                else:
+                    bigip_images[filename]['datastor'] = packed.filename
+
     return bigip_images
 
+
+def _images_needing_import(bigip_images):
+    image_names = bigip_images.keys()
+    for image in image_names:
+        final_image_name = image.replace('.qcow2.zip', '')
+        gc = _get_glance_client()
+        for uploaded_image in gc.images.list():
+            if uploaded_image.name == final_image_name:
+                del bigip_images[image]
+    return bigip_images
+        
 
 def _strip_version(endpoint):
     """Strip version from the last component of endpoint if present."""
@@ -211,6 +254,7 @@ def sftp_print_totals(transferred, toBeTransferred):
     percent_uploaded = 100 * float(transferred)/float(toBeTransferred)  
     print '\tTransferred: %d of %d bytes [%d%%]\r'% (transferred, toBeTransferred, int(percent_uploaded)),
 
+
 def _upload_bigip_zips_to_web_server(web_server_floating_ip, bigip_images):
     print " "
     # wait for web server to answer SSH    
@@ -241,43 +285,7 @@ def _upload_bigip_zips_to_web_server(web_server_floating_ip, bigip_images):
         )
         print "\tAvailable http://%s/%s" % (web_server_floating_ip, image)
         print "\n"
-
-
-def _upload_bigip_zip_tar_to_web_server(web_server_floating_ip, bigip_images):
-    print " "
-    # wait for web server to answer SSH    
-    while True:
-        if _is_port_open(web_server_floating_ip, 22):
-            print "\tSSH is reachable on web server"
-            time.sleep(10)
-            break
-        time.sleep(5)
-    
-    tar_file_name = "%s/%s" % (os.environ['IMAGE_DIR'], BIGIP_TAR_IMAGE)
-    # upload BIG-IP images to the webserver
-    transport = paramiko.Transport((web_server_floating_ip, 22))
-    transport.connect(username='ubuntu', password='openstack')
-    scp = paramiko.SFTPClient.from_transport(transport)
-    print "\tscp %s to server %s" % (tar_file_name, web_server_floating_ip)
-    print " "
-    scp.put(tar_file_name, '/tmp/bigipimage.tar', callback=sftp_print_totals)
-    print "\n"
-    print "\tExtracting F5 images into web directory"
-    # deploy the image to the web servers
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(web_server_floating_ip, username='ubuntu', password='openstack')
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        'sudo tar -xf /tmp/bigipimage.tar --directory /var/www/html'
-    )
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        'sudo rm /var/www/html/index.html'
-    )
-    print " "
-    for image in bigip_images:
-        print "\tImage package available at http://%s/%s" % (web_server_floating_ip, image)
-    print " "    
-
+  
 
 def _get_heat_output_value(stack_id, output_name):
     hc = _get_heat_client()
@@ -369,13 +377,29 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
         # Fix the name to reflect the actual BIG-IP release name
         for uploaded_image in gc.images.list():
             if uploaded_image.name == glance_image_name:
+                image_properties = { 'os_vendor':'F5 Networks',
+                                     'os_name':'F5 Traffic Management Operating System'} 
+                for ve_type in VE_PROPS:
+                    if final_image_name.find(ve_type) > -1:
+                        image_properties.update(VE_PROPS[ve_type])
+                
+                min_disk = 0
+                min_ram = 0
+                
+                for ve_type in VE_REQ:
+                    if final_image_name.find(ve_type) > -1:
+                        if 'min_disk' in VE_REQ[ve_type]:
+                            min_disk = VE_REQ[ve_type]['min_disk']
+                        if 'min_ram' in VE_REQ[ve_type]:
+                            min_ram = VE_REQ[ve_type]['min_ram']
+                
                 gc.images.update(uploaded_image.id,
                                  name=final_image_name,
                                  is_public=True,
-                                 properties={
-                                     'os_vendor':'f5_networks',
-                                     'os_name':'F5 Traffic Management Operating System'}
-                                 )
+                                 min_disk=min_disk,
+                                 min_ram=min_ram,
+                                 properties=image_properties)
+                
         
         # Add datastor if defined       
         if bigip_images[image]['datastor']:
@@ -396,7 +420,7 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
                     is_public=True,
                     data=open(bigip_images[image]['datastor'], 'rb'),
                     properties={
-                        'os_vendor':'f5_networks',
+                        'os_vendor':'F5 Networks',
                         'os_name':'F5 TMOS Datastor Volume'}
                 )
                 os.unlink(bigip_images[image]['datastor'])       
@@ -423,10 +447,18 @@ def _create_glance_images(f5_heat_template_file, download_server_image,
 def main():
     print "Finding F5 image zip archives"
     bigip_images = _make_bigip_inventory()
+     
     if not bigip_images:
         print "No TMOS zip archives. Please place F5 zip files in the directory " \
               "associaed wtih ENV variable IMAGE_DIR"
         sys.exit(1)
+    
+    bigip_images = _images_needing_import(bigip_images)
+    
+    if not bigip_images:
+        print "All images already imported"
+        sys.exit(1)
+    
     # external network
     print "Finding external networking"
     ext_net = _get_external_net_id()
@@ -451,7 +483,6 @@ def main():
     # print "Creating upload F5 image package for web server"
     # _make_bigip_zip_tar_file(bigip_images)
     print "Uploading F5 zip files to web server" 
-    # _upload_bigip_zip_tar_to_web_server(web_server_floating_ip, bigip_images)
     _upload_bigip_zips_to_web_server(web_server_floating_ip, bigip_images)
     
     # use the F5 supported Heat template to patch images
